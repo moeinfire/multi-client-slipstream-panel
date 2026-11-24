@@ -11,6 +11,15 @@ apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-flask openssl
 install -d -m 0750 "$APP" "$CONF"
 
+# Create the unprivileged account used by per-tunnel systemd services.
+if ! getent group slipstream >/dev/null; then
+  groupadd --system slipstream
+fi
+if ! id -u slipstream >/dev/null 2>&1; then
+  useradd --system --gid slipstream --no-create-home --home-dir /nonexistent --shell /usr/sbin/nologin slipstream
+fi
+install -d -o slipstream -g slipstream -m 0750 /var/log/slipstream-panel
+
 # Keep existing settings when reinstalling; prompt for new values only when needed.
 DEFAULT_PORT="$(cat "$CONF/panel.port" 2>/dev/null || echo 18080)"
 read -r -p "Panel port [${DEFAULT_PORT}]: " PANEL_PORT
