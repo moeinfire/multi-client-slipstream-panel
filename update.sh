@@ -2,7 +2,7 @@
 set -euo pipefail
 [[ $EUID -eq 0 ]] || { echo "Run as root: sudo bash update.sh"; exit 1; }
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "\${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd)"
 APP=/opt/slipstream-panel
 CONF=/etc/slipstream-panel
 
