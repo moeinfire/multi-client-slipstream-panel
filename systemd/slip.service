@@ -1,0 +1,21 @@
+[Unit]
+Description=Slipstream Standalone Manager
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=SLIPSTREAM_BIN=/usr/local/bin/slipstream-client
+Environment=SLIPSTREAM_RESOLVER=8.8.8.8:53
+Environment=SLIPSTREAM_TARGETS=r.iooq.ir:20817
+Environment=SLIPSTREAM_LOGDIR=/var/log/slipstream
+ExecStart=/usr/bin/python3 -u /opt/slipstream-panel/slip-manager.py
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=15
+User=root
+WorkingDirectory=/opt/slipstream-panel
+
+[Install]
+WantedBy=multi-user.target
