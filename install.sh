@@ -29,6 +29,7 @@ fi
 APP=/opt/slipstream-panel
 CONF=/etc/slipstream-panel
 BIN="${SLIPSTREAM_BIN:-/usr/local/bin/slipstream-client}"
+[[ "$BIN" == /* && "$BIN" != *[[:space:]]* ]] || { echo "SLIPSTREAM_BIN must be an absolute path without whitespace."; exit 1; }
 
 # Refuse to install an outdated or incomplete scanner implementation.
 # ICMP is informational only; every submitted resolver must reach the
@@ -41,8 +42,23 @@ if ! grep -Fq 'candidates=list(resolvers)' "$SCRIPT_DIR/app.py" ||
 fi
 
 apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-flask openssl
+DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-flask openssl iputils-ping ca-certificates
+python3 - "$SCRIPT_DIR/app.py" <<'PY'
+import ast, sys
+from pathlib import Path
+if sys.version_info < (3, 9):
+    raise SystemExit("ERROR: Python 3.9 or newer is required.")
+try:
+    import flask
+except Exception as exc:
+    raise SystemExit(f"ERROR: Flask is not importable by the system Python: {exc}")
+source = Path(sys.argv[1]).read_text(encoding="utf-8")
+ast.parse(source, filename=sys.argv[1])
+print(f"Python {sys.version.split()[0]} and Flask are ready; app.py syntax is valid.")
+PY
 install -d -m 0750 "$APP" "$CONF"
+
+install -d -m 0755 "$(dirname "$BIN")"
 
 # Create the unprivileged account used by per-tunnel systemd services.
 if ! getent group slipstream >/dev/null; then
@@ -99,7 +115,7 @@ echo "Installed DNS scanner: ICMP-independent resolver testing enabled."
 
 # Install the bundled Slipstream executable from the repository root.
 if [[ -f "$SCRIPT_DIR/slipstream" ]]; then
-  install -m 0755 "$SCRIPT_DIR/slipstream" "$BIN"
+  install -D -m 0755 "$SCRIPT_DIR/slipstream" "$BIN"
   echo "Installed Slipstream client to $BIN"
 else
   echo "NOTICE: bundled file '$SCRIPT_DIR/slipstream' was not found."
@@ -133,6 +149,7 @@ Type=simple
 WorkingDirectory=$APP
 Environment=PANEL_HOST=0.0.0.0
 Environment=PANEL_PORT=$PANEL_PORT
+Environment=SLIPSTREAM_BIN=$BIN
 ExecStart=/usr/bin/python3 $APP/app.py
 Restart=always
 RestartSec=3
@@ -149,13 +166,17 @@ systemctl daemon-reload
 systemctl enable slipstream-panel
 systemctl restart slipstream-panel || systemctl start slipstream-panel
 
-if [[ -x "$BIN" ]]; then
-  systemctl enable slip.service
-  systemctl start slip.service
-  echo "Standalone Slipstream service enabled and started (r.iooq.ir:20817)."
+if [[ "${SLIPSTREAM_ENABLE_STANDALONE:-0}" == "1" ]]; then
+  if [[ -x "$BIN" ]]; then
+    systemctl enable --now slip.service
+    echo "Standalone Slipstream service enabled and started. Review its target in slip.service first."
+  else
+    echo "ERROR: standalone service requested, but $BIN is missing or not executable."
+    exit 1
+  fi
 else
-  echo "NOTICE: slip.service was installed but not started because $BIN is missing or not executable."
-  echo "Install the Slipstream client binary, then run: systemctl enable --now slip.service"
+  echo "Standalone slip.service was installed but left disabled; the panel does not require it."
+  echo "Review systemd/slip.service and its target before enabling it manually."
 fi
 
 echo

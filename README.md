@@ -1,97 +1,90 @@
 # multi-client slipstream panel with load balancer
 
-A self-hosted web-based management panel for running, monitoring, and managing multiple Slipstream client tunnels on Linux servers.
+A self-hosted web panel for managing multiple Slipstream client tunnels on Linux servers. It provides tunnel lifecycle controls, DNS configuration, health monitoring, per-tunnel traffic accounting, a two-stage DNS scanner, and a SOCKS5 TCP load balancer.
 
-Slipstream Panel provides a centralized web interface for managing tunnel instances, configuring DNS resolvers, monitoring connection health, tracking traffic usage, and distributing SOCKS5 connections across healthy tunnels.
+## Features
 
-## ✨ Features
+### Tunnel management
+- Add and manage multiple Slipstream client instances through systemd.
+- Start, stop, restart, and delete individual tunnels or perform bulk operations.
+- Configure local listener ports, DNS resolver lists, and optional PEM certificates.
+- Inspect per-tunnel service logs.
 
-### 🚇 Tunnel Management
-- Add and configure multiple Slipstream client instances.
-- Automatically create and manage systemd services for tunnel instances.
-- Start, stop, restart, and delete individual tunnels.
-- Perform bulk operations to start, stop, or restart multiple tunnels.
-- Configure a local listening port for each tunnel.
-- Optional PEM certificate path configuration.
-- View individual tunnel logs for troubleshooting.
+### DNS management and scanner
+- Configure per-tunnel DNS resolvers and a global default for new tunnels.
+- Apply a DNS list to existing tunnels one at a time.
+- Scan resolver IP addresses in two stages: ICMP ping information, then a real Slipstream + authenticated SOCKS5 + Google HTTPS test.
+- ICMP is informational only. Every submitted resolver proceeds to the end-to-end test, even when it does not answer ping.
+- Validate SOCKS5 username/password authentication, TLS, and Google's HTTP 204 response.
+- Configure scan worker count and timeout, sort successful results, and copy selected resolvers.
+- Scanner tests use temporary Slipstream processes and do not restart production tunnel services.
 
-### 🌐 DNS Management
-- Configure multiple DNS resolvers for each tunnel.
-- Set global default DNS resolvers for newly created tunnels.
-- Apply DNS configuration to all existing tunnels.
-- Edit DNS settings independently for each tunnel.
-- Support multiple resolver entries in `IP:PORT` format.
+### SOCKS5 load balancer
+- Round-robin selection across enabled tunnels reported as healthy.
+- Temporarily quarantine a backend when its local TCP listener cannot be reached.
+- Forward the client's SOCKS5 handshake, including authentication, unchanged to the selected backend.
 
-### 🔍 Advanced DNS Scanner
-- Two-stage DNS testing workflow.
-- First-stage ICMP Ping testing for DNS resolver IPs.
-- Second-stage end-to-end Slipstream tunnel testing.
-- SOCKS5 Username/Password authentication during the test.
-- HTTPS connectivity verification against Google.
-- TLS certificate validation and HTTP 204 response verification.
-- Measure end-to-end latency and sort successful DNS results.
-- Configurable worker count and test timeout.
-- Select and copy successful DNS resolver addresses.
-- Temporary test tunnels do not modify or restart existing production tunnels.
+### Traffic and health monitoring
+- Read per-service IP accounting counters from systemd.
+- Display cumulative received/sent bytes and approximate transfer rates.
+- Detect Slipstream readiness, connection errors, process exits, and local port conflicts.
+- Allow a recovery grace period and retry failed tunnels after a cooldown.
 
-### ⚖️ SOCKS5 Load Balancer
-- Built-in SOCKS5 load balancer.
-- Round Robin distribution for new connections.
-- Automatically select healthy and active tunnel backends.
-- Temporarily exclude unhealthy or unreachable tunnels.
-- Reintroduce recovered tunnels after the cooldown period.
-- Forward SOCKS5 authentication to the selected backend.
+## Requirements
 
-### 📊 Traffic Monitoring
-- Monitor incoming and outgoing traffic for each tunnel.
-- Display total traffic usage per instance.
-- Calculate approximate transfer speeds using periodic sampling.
-- Reset traffic counters for individual tunnels.
-- Traffic accounting based on systemd per-service IP accounting.
+- Ubuntu or Debian-based Linux.
+- Root access for installation and systemd management.
+- Python 3.9 or newer and Flask. The installer installs the distro Flask package and checks the Python version and app syntax.
+- systemd.
+- A compatible Linux Slipstream client executable. This repository currently contains a file named slipstream; the installer copies it to /usr/local/bin/slipstream-client by default. Binary compatibility depends on the target server architecture. You may set SLIPSTREAM_BIN to an absolute executable path to use your own build.
 
-### ❤️ Connection Health Monitoring
-- Periodically inspect each tunnel's service logs.
-- Detect connection-ready, connection-closed, and client-error events.
-- Display connection status and failure information.
-- Allow a recovery window before declaring a tunnel failed.
-- Automatically restart failed tunnels after a cooldown period.
-- Detect process exits and address-in-use errors.
+## Installation
 
-### 🔐 Access and Deployment
-- Password-protected web interface.
-- CSRF protection for management actions.
-- Automatically generated initial administrator password.
-- Separate storage for application secrets and configuration.
-- systemd service integration.
-- Installation and update scripts for Ubuntu/Debian-based systems.
+Clone the repository and run the installer as root:
 
-## 🧰 Requirements
+    git clone https://github.com/moeinfire/multi-client-slipstream-panel.git
+    cd multi-client-slipstream-panel
+    sudo bash install.sh
 
-- Ubuntu or Debian-based Linux server.
-- Root or sudo access.
-- Python 3.
-- Flask.
-- Slipstream client binary installed separately.
+The installer:
+- Installs Python/Flask and the ICMP ping utility.
+- Creates the slipstream system account used by per-tunnel services.
+- Installs the panel under /opt/slipstream-panel.
+- Creates configuration and secret files under /etc/slipstream-panel.
+- Preserves an existing tunnels.db and existing panel credentials when reinstalling.
+- Installs the bundled client when present and writes the selected client path into the panel systemd unit.
+- Generates an administrator password when one does not already exist and prints a newly generated password once at the end of installation.
+- Configures a private URL path and panel port.
 
-## 🚀 Quick Installation
+Open the URL printed by the installer:
 
-```bash
-git clone https://github.com/moeinfire/multi-client-slipstream-panel.git
-cd multi-client-slipstream-panel
-sudo bash install.sh
-```
+    http://SERVER_IP:18080/PRIVATE_PATH/
 
+Restrict the panel port to trusted source IP addresses and use HTTPS through a reverse proxy when exposing it publicly. The private path is an additional URL-level barrier, not a replacement for authentication or firewall rules.
 
-The installer generates an initial administrator password. See the installation instructions in this repository for details.
+## Standalone manager (optional)
 
-## ⚠️ Important Notes
+The repository also contains slip-manager.py and systemd/slip.service for a separate, standalone Slipstream process. The panel does not need this service. The installer therefore places the unit but leaves it disabled by default. The sample unit has a preset target of r.iooq.ir:20817; review and change that target before enabling it.
 
-- The Slipstream client binary is not included.
-- Tunnel configurations and systemd tunnel services are not included.
-- Each user must configure their own domains, DNS resolvers, certificates, and tunnel settings.
-- The panel should not be exposed directly to the public internet without appropriate access restrictions and HTTPS protection.
-- Review the source code and security configuration before deploying in production.
+To opt in during installation, set SLIPSTREAM_ENABLE_STANDALONE=1 in the root installer's environment. Alternatively, after reviewing the unit, enable it manually with:
 
-## 📄 License
+    systemctl enable --now slip.service
+
+## Updating
+
+From a clean checkout on the main branch:
+
+    sudo bash update.sh
+
+The updater validates the Python source, creates a timestamped backup of the current app.py, installs the new app atomically, and rolls back the file if the panel cannot restart.
+
+## Important notes
+
+- Tunnel definitions and their database are not published in this repository.
+- Existing tunnel definitions are stored in /opt/slipstream-panel/tunnels.db; back it up before migrations or manual changes.
+- Configure your own domains, DNS resolvers, certificates, and SOCKS5 credentials.
+- Review firewall, reverse-proxy, and certificate settings before exposing the panel.
+
+## License
 
 MIT License
