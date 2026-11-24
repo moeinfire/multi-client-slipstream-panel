@@ -2,6 +2,7 @@
 set -euo pipefail
 [[ $EUID -eq 0 ]] || { echo "Run as root: sudo bash install.sh"; exit 1; }
 
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 APP=/opt/slipstream-panel
 CONF=/etc/slipstream-panel
 BIN="${SLIPSTREAM_BIN:-/usr/local/bin/slipstream-client}"
@@ -50,7 +51,17 @@ if [[ "${KEEP_PASSWORD:-Y}" =~ ^[Nn]$ ]]; then
   chmod 600 "$CONF/admin.password"
 fi
 
-install -m 0750 app.py "$APP/app.py"
+install -m 0750 "$SCRIPT_DIR/app.py" "$APP/app.py"
+
+# Install the bundled Slipstream executable from the repository root.
+if [[ -f "$SCRIPT_DIR/slipstream" ]]; then
+  install -m 0755 "$SCRIPT_DIR/slipstream" "$BIN"
+  echo "Installed Slipstream client to $BIN"
+else
+  echo "NOTICE: bundled file '$SCRIPT_DIR/slipstream' was not found."
+  echo "The panel will install, but scanner features need the Slipstream client."
+fi
+
 chown -R root:root "$APP"
 printf '%s' "$PANEL_PORT" > "$CONF/panel.port"
 printf '/%s' "$PANEL_PATH" > "$CONF/base-path"
