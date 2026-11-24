@@ -76,7 +76,7 @@ Slipstream Panel provides a centralized web interface for managing tunnel instan
 ## 🚀 Quick Installation
 
 ```bash
-git clone https://github.com/moeinfire/multi-slipstream-panel-with-load-balancer.git
+git clone https://github.com/moeinfire/multi-client-slipstream-panel.git
 cd multi-slipstream-panel-with-load-balancer
 sudo bash install.sh
 ```
