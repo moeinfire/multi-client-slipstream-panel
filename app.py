@@ -8,6 +8,8 @@ APP='/opt/slipstream-panel'; DB=APP+'/tunnels.db'
 BIN=os.environ.get('SLIPSTREAM_BIN','/usr/local/bin/slipstream-client')
 PMIN=int(os.environ.get('PORT_MIN','10800')); PMAX=int(os.environ.get('PORT_MAX','11999'))
 PANEL_HOST=os.environ.get('PANEL_HOST','0.0.0.0'); PANEL_PORT=int(os.environ.get('PANEL_PORT','18080'))
+PANEL_BASE_PATH=open('/etc/slipstream-panel/base-path').read().strip().rstrip('/') if os.path.exists('/etc/slipstream-panel/base-path') else ''
+if PANEL_BASE_PATH and not re.fullmatch(r'/[A-Za-z0-9_-]{4,64}', PANEL_BASE_PATH): raise RuntimeError('Invalid panel base path')
 LOCAL_HOST='127.0.0.1'; CHECK=10; COOLDOWN=300; ERROR_GRACE_SECONDS=30
 LOGDIR='/var/log/slipstream-panel'
 LOG_OFFSETS={}
@@ -23,6 +25,36 @@ DNS_SCAN_LOCK=threading.RLock()
 DNS_SCAN_TEST_HOST='www.google.com'
 DNS_SCAN_STATE={"running":False,"cancel":False,"domain":"","phase":"idle","workers":1,"ping_total":0,"ping_done":0,"latency_total":0,"latency_done":0,"ping_results":[],"latency_results":[],"started_at":None}
 app=Flask(__name__); app.secret_key=open('/etc/slipstream-panel/secret.key').read().strip()
+app.config['SESSION_COOKIE_PATH']=(PANEL_BASE_PATH or '/')
+
+class PanelPathMiddleware:
+    def __init__(self, wrapped, prefix): self.wrapped,self.prefix=wrapped,prefix
+    def __call__(self, environ, start_response):
+        if self.prefix:
+            path=environ.get('PATH_INFO','')
+            if path == self.prefix or path.startswith(self.prefix + '/'):
+                environ['SCRIPT_NAME']=environ.get('SCRIPT_NAME','')+self.prefix
+                environ['PATH_INFO']=path[len(self.prefix):] or '/'
+            else:
+                body=b'Not Found'
+                start_response('404 Not Found',[('Content-Type','text/plain; charset=utf-8'),('Content-Length',str(len(body)))])
+                return [body]
+        return self.wrapped(environ,start_response)
+app.wsgi_app=PanelPathMiddleware(app.wsgi_app,PANEL_BASE_PATH)
+
+@app.after_request
+def apply_panel_base_path(response):
+    if PANEL_BASE_PATH:
+        location=response.headers.get('Location')
+        if location and location.startswith('/') and not location.startswith(PANEL_BASE_PATH+'/'):
+            response.headers['Location']=PANEL_BASE_PATH+location
+        if response.mimetype=='text/html':
+            body=response.get_data()
+            body=body.replace(b'="/', ('="'+PANEL_BASE_PATH+'/').encode())
+            body=body.replace(b"('/", ("('"+PANEL_BASE_PATH+'/').encode())
+            body=body.replace(b"(\"/", ('(\"'+PANEL_BASE_PATH+'/').encode())
+            response.set_data(body)
+    return response
 PASSWORD=open('/etc/slipstream-panel/admin.password').read().strip()
 
 HTML=r'''<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Slipstream Manager</title><style>
