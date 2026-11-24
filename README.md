@@ -1,5 +1,7 @@
 # Multi-Client Slipstream Panel with Load Balancer
 
+<img width="1408" height="768" alt="1vvzzm1vvzzm1vvz" src="https://github.com/user-attachments/assets/520c3834-4065-41f5-9494-859f59aa213a" />
+
 A self-hosted web-based management panel for running, monitoring, and managing multiple Slipstream client tunnels on Linux servers.
 
 Slipstream Panel provides a centralized web interface for managing tunnel instances, configuring DNS resolvers, monitoring connection health, tracking traffic usage, and distributing SOCKS5 connections across healthy tunnels.
