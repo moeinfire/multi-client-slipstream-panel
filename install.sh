@@ -7,6 +7,16 @@ APP=/opt/slipstream-panel
 CONF=/etc/slipstream-panel
 BIN="${SLIPSTREAM_BIN:-/usr/local/bin/slipstream-client}"
 
+# Refuse to install an outdated or incomplete scanner implementation.
+# ICMP is informational only; every submitted resolver must reach the
+# Slipstream + authenticated SOCKS5 + Google HTTPS test stage.
+if ! grep -Fq 'candidates=list(resolvers)' "$SCRIPT_DIR/app.py" ||
+   ! grep -Fq 'ICMP is informational only' "$SCRIPT_DIR/app.py"; then
+  echo "ERROR: app.py does not contain the ICMP-independent DNS scanner fix."
+  echo "Please download/clone the latest repository version and run install.sh again."
+  exit 1
+fi
+
 apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get install -y python3 python3-flask openssl
 install -d -m 0750 "$APP" "$CONF"
@@ -60,7 +70,9 @@ if [[ "${KEEP_PASSWORD:-Y}" =~ ^[Nn]$ ]]; then
   chmod 600 "$CONF/admin.password"
 fi
 
+# Always deploy the app.py shipped beside this installer (including scanner fixes).
 install -m 0750 "$SCRIPT_DIR/app.py" "$APP/app.py"
+echo "Installed DNS scanner: ICMP-independent resolver testing enabled."
 
 # Install the bundled Slipstream executable from the repository root.
 if [[ -f "$SCRIPT_DIR/slipstream" ]]; then
