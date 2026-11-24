@@ -813,7 +813,7 @@ def traffic_reset(i):
 def login():
     if request.method=='POST':
         check_csrf()
-        if hmac.compare_digest(request.form.get('password',''),PASSWORD):
+        if hmac.compare_digest(request.form.get('password','').encode('utf-8'),PASSWORD.encode('utf-8')):
             session.clear();session['logged']=True;session['csrf']=secrets.token_urlsafe(24);return redirect('/')
         flash('رمز اشتباه است.')
     return render_template_string(HTML,logged=False,csrf=csrf_token())
