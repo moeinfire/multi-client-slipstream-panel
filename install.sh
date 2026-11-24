@@ -71,6 +71,12 @@ else
   echo "The panel will install, but scanner features need the Slipstream client."
 fi
 
+# Install the standalone Slipstream manager and its systemd unit.
+install -m 0750 "$SCRIPT_DIR/slip-manager.py" "$APP/slip-manager.py"
+install -d -m 0755 /etc/systemd/system
+install -m 0644 "$SCRIPT_DIR/systemd/slip.service" /etc/systemd/system/slip.service
+install -d -m 0755 /var/log/slipstream
+
 chown -R root:root "$APP"
 printf '%s' "$PANEL_PORT" > "$CONF/panel.port"
 printf '/%s' "$PANEL_PATH" > "$CONF/base-path"
