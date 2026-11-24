@@ -114,6 +114,15 @@ systemctl daemon-reload
 systemctl enable slipstream-panel
 systemctl restart slipstream-panel || systemctl start slipstream-panel
 
+if [[ -x "$BIN" ]]; then
+  systemctl enable slip.service
+  systemctl start slip.service
+  echo "Standalone Slipstream service enabled and started (r.iooq.ir:20817)."
+else
+  echo "NOTICE: slip.service was installed but not started because $BIN is missing or not executable."
+  echo "Install the Slipstream client binary, then run: systemctl enable --now slip.service"
+fi
+
 echo
 echo "Slipstream Panel installed."
 echo "URL: http://SERVER_IP:${PANEL_PORT}/${PANEL_PATH}/"
