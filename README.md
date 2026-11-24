@@ -81,12 +81,6 @@ cd multi-client-slipstream-panel
 sudo bash install.sh
 ```
 
-After installation, access the panel at:
-
-```text
-http://SERVER_IP:18080
-```
-
 The installer generates an initial administrator password. See the installation instructions in this repository for details.
 
 
