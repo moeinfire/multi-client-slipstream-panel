@@ -71,17 +71,19 @@ Slipstream Panel provides a centralized web interface for managing tunnel instan
 - Root or sudo access.
 - Python 3.
 - Flask.
-- Slipstream client binary installed separately.
+- The Slipstream client binary is bundled in the repository and installed automatically.
 
-## 🚀 Quick Installation
+## 🚀 Quick Installation (No Git Required)
+
+Run this single command on an Ubuntu or Debian server:
 
 ```bash
-git clone https://github.com/moeinfire/multi-client-slipstream-panel.git
-cd multi-client-slipstream-panel
-sudo bash install.sh
+sudo bash -c 'apt-get update && apt-get install -y curl tar ca-certificates && curl -fsSL https://raw.githubusercontent.com/moeinfire/multi-client-slipstream-panel/main/install-online.sh | bash'
 ```
 
-The installer generates an initial administrator password. See the installation instructions in this repository for details.
+This command installs the small download prerequisites, downloads the latest `main` branch archive directly from GitHub, verifies the required project files, and runs the normal installer. **Git is not required.**
+
+The installer prompts for the panel port, private URL path, and administrator password. It also installs the bundled Slipstream client binary.
 
 
 ## 🗑️ Complete Uninstallation
@@ -101,7 +103,7 @@ For safety, external certificate files, firewall rules, unrelated services, and 
 
 ## ⚠️ Important Notes
 
-- The Slipstream client binary is not included.
+- The Slipstream client binary is included in the repository and installed by the installer.
 - Tunnel configurations and systemd tunnel services are not included.
 - Each user must configure their own domains, DNS resolvers, certificates, and tunnel settings.
 - The panel should not be exposed directly to the public internet without appropriate access restrictions and HTTPS protection.
