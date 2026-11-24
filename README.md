@@ -89,7 +89,7 @@ The installer generates an initial administrator password. See the installation 
 To remove the panel and resources created by this project, download/clone the repository and run:
 
 ```bash
-sudo bash https://github.com/moeinfire/multi-client-slipstream-panel/blob/main/uninstall.sh
+sudo bash uninstall.sh
 ```
 
 The uninstaller asks for explicit confirmation by requiring the word `REMOVE`. To run without an interactive prompt:
