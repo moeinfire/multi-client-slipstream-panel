@@ -73,17 +73,15 @@ Slipstream Panel provides a centralized web interface for managing tunnel instan
 - Flask.
 - The Slipstream client binary is bundled in the repository and installed automatically.
 
-## 🚀 Quick Installation (Without Git)
+## 🚀 Quick Installation (One Command)
 
-No Git installation or `git clone` is required. Run this single command on an Ubuntu/Debian server:
+Run this single command on an Ubuntu/Debian server (Git is not required):
 
 ```bash
-sudo bash -c 'set -e; apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y curl tar ca-certificates; d=$(mktemp -d); trap '\''rm -rf "$d"'\'' EXIT; curl -fsSL "https://github.com/moeinfire/multi-client-slipstream-panel/archive/refs/heads/main.tar.gz" -o "$d/source.tar.gz"; tar -xzf "$d/source.tar.gz" -C "$d" --strip-components=1; bash "$d/install.sh"'
+bash <(curl -fsSL https://raw.githubusercontent.com/moeinfire/multi-client-slipstream-panel/main/install-online.sh)
 ```
 
-The command installs the small download/extraction prerequisites when needed, downloads the latest `main` branch archive from GitHub, and runs the existing project installer. Temporary files are removed when installation exits.
-
-Run it as root without the leading `sudo` if you are already logged in as root.
+The online installer downloads the latest `main` branch archive and runs the project installer. It can install `curl` and `tar` when needed. Run it as root; if you are not already root, prefix the command with `sudo` by opening a root shell first (`sudo -i`).
 
 ## 🗑️ Complete Uninstallation
 
