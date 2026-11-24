@@ -3,6 +3,29 @@ set -euo pipefail
 [[ $EUID -eq 0 ]] || { echo "Run as root: sudo bash install.sh"; exit 1; }
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+# When installing from a Git checkout, fast-forward to the latest main before
+# using any bundled files. Refuse dirty/non-main checkouts rather than
+# overwriting local work or installing an unintended branch.
+if [[ -d "$SCRIPT_DIR/.git" && "${SLIPSTREAM_INSTALLER_UPDATED:-0}" != "1" ]]; then
+  command -v git >/dev/null 2>&1 || { echo "ERROR: git is required to update this checkout."; exit 1; }
+  GIT_SAFE=(git -c "safe.directory=$SCRIPT_DIR" -C "$SCRIPT_DIR")
+  if [[ -n "$("${GIT_SAFE[@]}" status --porcelain)" ]]; then
+    echo "ERROR: repository has local changes; commit/stash them before installing."
+    exit 1
+  fi
+  CURRENT_BRANCH="$("${GIT_SAFE[@]}" branch --show-current)"
+  if [[ "$CURRENT_BRANCH" != "main" ]]; then
+    echo "ERROR: installer checkout is on '$CURRENT_BRANCH', not 'main'."
+    echo "Switch to main and run the installer again."
+    exit 1
+  fi
+  "${GIT_SAFE[@]}" fetch --quiet origin main || { echo "ERROR: could not fetch latest main from origin."; exit 1; }
+  "${GIT_SAFE[@]}" pull --ff-only --quiet origin main || { echo "ERROR: could not fast-forward to origin/main."; exit 1; }
+  export SLIPSTREAM_INSTALLER_UPDATED=1
+  exec bash "$SCRIPT_DIR/install.sh" "$@"
+fi
+
 APP=/opt/slipstream-panel
 CONF=/etc/slipstream-panel
 BIN="${SLIPSTREAM_BIN:-/usr/local/bin/slipstream-client}"
