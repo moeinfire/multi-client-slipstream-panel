@@ -81,7 +81,7 @@ Run this single command on an Ubuntu/Debian server (Git is not required):
 bash <(curl -fsSL https://raw.githubusercontent.com/moeinfire/multi-client-slipstream-panel/main/install-online.sh)
 ```
 
-The online installer downloads the latest `main` branch archive and runs the project installer. It can install `curl` and `tar` when needed. Run it as root; if you are not already root, prefix the command with `sudo` by opening a root shell first (`sudo -i`).
+The online installer downloads the latest `main` branch archive and runs the project installer. `curl` must be available to start the command; the bootstrap installs `tar` and CA certificates if needed. Run it as root; if you are not already root, open a root shell first with `sudo -i`.
 
 ## 🗑️ Complete Uninstallation
 
