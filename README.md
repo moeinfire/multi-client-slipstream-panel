@@ -1,4 +1,4 @@
-# Slipstream Panel
+# multi client slipstream panel with load balancer
 
 A self-hosted web-based management panel for running, monitoring, and managing multiple Slipstream client tunnels on Linux servers.
 
