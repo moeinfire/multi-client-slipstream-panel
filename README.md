@@ -1,6 +1,10 @@
-# Multi-Client Slipstream Panel with Load Balancer
+# Multi-Client Slipstream Panel with Load Balancer & DNS Scanner
 
-<img width="1408" height="768" alt="1vvzzm1vvzzm1vvz" src="https://github.com/user-attachments/assets/520c3834-4065-41f5-9494-859f59aa213a" />
+<p align="center">
+  <strong>🇬🇧 English</strong> · <a href="README.fa.md">🇮🇷 فارسی</a>
+</p>
+
+<img width="1408" height="768" alt="Slipstream Panel screenshot" src="https://github.com/user-attachments/assets/520c3834-4065-41f5-9494-859f59aa213a" />
 
 A self-hosted web-based management panel for running, monitoring, and managing multiple Slipstream client tunnels on Linux servers.
 
@@ -9,6 +13,7 @@ Slipstream Panel provides a centralized web interface for managing tunnel instan
 ## ✨ Features
 
 ### 🚇 Tunnel Management
+
 - Add and configure multiple Slipstream client instances.
 - Automatically create and manage systemd services for tunnel instances.
 - Start, stop, restart, and delete individual tunnels.
@@ -18,6 +23,7 @@ Slipstream Panel provides a centralized web interface for managing tunnel instan
 - View individual tunnel logs for troubleshooting.
 
 ### 🌐 DNS Management
+
 - Configure multiple DNS resolvers for each tunnel.
 - Set global default DNS resolvers for newly created tunnels.
 - Apply DNS configuration to all existing tunnels.
@@ -25,6 +31,7 @@ Slipstream Panel provides a centralized web interface for managing tunnel instan
 - Support multiple resolver entries in `IP:PORT` format.
 
 ### 🔍 Advanced DNS Scanner
+
 - Two-stage DNS testing workflow.
 - First-stage ICMP Ping testing for DNS resolver IPs.
 - Second-stage end-to-end Slipstream tunnel testing.
@@ -37,6 +44,7 @@ Slipstream Panel provides a centralized web interface for managing tunnel instan
 - Temporary test tunnels do not modify or restart existing production tunnels.
 
 ### ⚖️ SOCKS5 Load Balancer
+
 - Built-in SOCKS5 load balancer.
 - Round Robin distribution for new connections.
 - Automatically select healthy and active tunnel backends.
@@ -45,6 +53,7 @@ Slipstream Panel provides a centralized web interface for managing tunnel instan
 - Forward SOCKS5 authentication to the selected backend.
 
 ### 📊 Traffic Monitoring
+
 - Monitor incoming and outgoing traffic for each tunnel.
 - Display total traffic usage per instance.
 - Calculate approximate transfer speeds using periodic sampling.
@@ -52,6 +61,7 @@ Slipstream Panel provides a centralized web interface for managing tunnel instan
 - Traffic accounting based on systemd per-service IP accounting.
 
 ### ❤️ Connection Health Monitoring
+
 - Periodically inspect each tunnel's service logs.
 - Detect connection-ready, connection-closed, and client-error events.
 - Display connection status and failure information.
@@ -59,7 +69,14 @@ Slipstream Panel provides a centralized web interface for managing tunnel instan
 - Automatically restart failed tunnels after a cooldown period.
 - Detect process exits and address-in-use errors.
 
+### 🌐 Interface Language
+
+- Switch the web panel interface between Persian and English.
+- Language selection is saved in the browser and retained across page reloads.
+- Layout direction automatically changes between RTL and LTR.
+
 ### 🔐 Access and Deployment
+
 - Password-protected web interface.
 - CSRF protection for management actions.
 - Automatically generated initial administrator password.
@@ -114,3 +131,7 @@ For safety, external certificate files, firewall rules, unrelated services, and 
 ## 📄 License
 
 MIT License
+
+---
+
+<p align="center">🇬🇧 English · <a href="README.fa.md">🇮🇷 فارسی</a> · <a href="#multi-client-slipstream-panel-with-load-balancer--dns-scanner">⬆ Back to top</a></p>
