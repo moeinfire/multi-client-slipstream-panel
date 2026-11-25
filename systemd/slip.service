@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 Environment=SLIPSTREAM_BIN=/usr/local/bin/slipstream-client
 Environment=SLIPSTREAM_RESOLVER=8.8.8.8:53
-Environment=SLIPSTREAM_TARGETS=r.iooq.ir:20817
+Environment=SLIPSTREAM_TARGETS=r.2222.ir:20817
 Environment=SLIPSTREAM_LOGDIR=/var/log/slipstream
 ExecStart=/usr/bin/python3 -u /opt/slipstream-panel/slip-manager.py
 Restart=always
